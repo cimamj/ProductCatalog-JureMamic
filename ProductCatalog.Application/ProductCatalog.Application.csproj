@@ -10,9 +10,4 @@
     <ProjectReference Include="..\ProductCatalog.Domain\ProductCatalog.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Auth\" />
-    <Folder Include="Interfaces\" />
-  </ItemGroup>
-
 </Project>
