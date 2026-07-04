@@ -19,7 +19,7 @@ namespace ProductCatalog.Application.Features.Products.Handlers
         {
             if(string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                return Result<IReadOnlyList<ProductListItemDto>>.Failure(ErrorCode.InvalidInput, "Search request cannot be empty."));
+                return Result<IReadOnlyList<ProductListItemDto>>.Failure(ErrorCode.InvalidInput, "Search request cannot be empty.");
             }
 
             var products = await productRepository.SearchAsync(request.SearchTerm);
