@@ -30,7 +30,7 @@ namespace ProductCatalog.Application.Features.Products.Handlers
                 Id = product.Id,
                 Title = product.Title,
                 Description = product.Description,
-                Category = product.Category,
+                Category = product.Category.Name,
                 Price = product.Price,
                 Rating = product.Rating,
                 Stock = product.Stock,

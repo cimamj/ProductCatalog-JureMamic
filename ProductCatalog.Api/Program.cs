@@ -1,12 +1,28 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProductCatalog.Api.Middleware;
 using ProductCatalog.Application;
 using ProductCatalog.Infrastructure;
+using ProductCatalog.Infrastructure.ExternalSource;
+using ProductCatalog.Infrastructure.Persistence;
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.MSSqlServer(
+        connectionString: context.Configuration.GetConnectionString("DefaultConnection"),
+        sinkOptions: new MSSqlServerSinkOptions
+        {
+            TableName = "Logs",
+            AutoCreateSqlTable = true
+        }));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -59,6 +75,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
+        dbContext.Database.Migrate();
+
+        var syncService = scope.ServiceProvider.GetRequiredService<CatalogSyncService>();
+        await syncService.SyncAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Startup catalog sync failed.");
+        throw;
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

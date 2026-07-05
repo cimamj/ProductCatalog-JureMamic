@@ -1,4 +1,4 @@
-﻿namespace ProductCatalog.Domain.Entities
+namespace ProductCatalog.Application.Models
 {
     public class User
     {

@@ -3,6 +3,7 @@
     public enum ErrorCode
     {
         NotFound,
-        InvalidInput
+        InvalidInput,
+        ExternalService
     }
 }

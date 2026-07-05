@@ -1,32 +1,36 @@
 ﻿using ProductCatalog.Application.Common;
 using ProductCatalog.Application.DTOs;
 using ProductCatalog.Application.Features.Products.Requests;
+using ProductCatalog.Application.Interfaces;
 using ProductCatalog.Domain.Common;
-using ProductCatalog.Domain.Enums;
 using ProductCatalog.Domain.Interfaces;
 
 namespace ProductCatalog.Application.Features.Products.Handlers
 {
-    public class SearchProductsHandler : RequestHandler<SearchProductsRequest, IReadOnlyList<ProductListItemDto>>
+    public class SearchProductsHandler : RequestHandler<SearchProductsRequest, ProductListResultDto>
     {
-        private readonly IProductRepository productRepository;
-        public SearchProductsHandler(IProductRepository productRepository)
+        private readonly IProductRepository _productRepository;
+        private readonly ICacheService _cacheService;
+        public SearchProductsHandler(IProductRepository productRepository, ICacheService cacheService)
         {
-            this.productRepository = productRepository;
+            _productRepository = productRepository;
+            _cacheService = cacheService;
         }
 
-        protected override async Task<Result<IReadOnlyList<ProductListItemDto>>> HandleRequest(SearchProductsRequest request)
+        protected override async Task<Result<ProductListResultDto>> HandleRequest(SearchProductsRequest request)
         {
-            if(string.IsNullOrWhiteSpace(request.SearchTerm))
-            {
-                return Result<IReadOnlyList<ProductListItemDto>>.Failure(ErrorCode.InvalidInput, "Search request cannot be empty.");
-            }
+            var cacheKey = CacheKeys.ProductsSearch(string.IsNullOrWhiteSpace(request.SearchTerm) ? string.Empty : request.SearchTerm);
 
-            var products = await productRepository.SearchAsync(request.SearchTerm);
-            
+            var products = await _cacheService.GetOrCreateAsync(cacheKey,
+                () => _productRepository.SearchAsync(request.SearchTerm));
+
             var searchedProducts = products.Select(p => p.ToListItemDto()).ToList();
 
-            return Result<IReadOnlyList<ProductListItemDto>>.Success(searchedProducts);
+            return Result<ProductListResultDto>.Success(new ProductListResultDto
+            {
+                Items = searchedProducts,
+                Total = searchedProducts.Count
+            });
         }
     }
 }

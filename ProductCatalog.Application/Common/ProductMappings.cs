@@ -15,7 +15,8 @@ namespace ProductCatalog.Application.Common
                 ? product.Description[..100]
                 : product.Description,
                 Price = product.Price,
-                Thumbnail = product.Thumbnail
+                Thumbnail = product.Thumbnail,
+                Category = product.Category?.Name ?? string.Empty
             };
         }
     }

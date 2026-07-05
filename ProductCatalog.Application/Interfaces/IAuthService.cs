@@ -1,8 +1,8 @@
-﻿using ProductCatalog.Domain.Entities;
+using ProductCatalog.Application.Models;
 
-namespace ProductCatalog.Domain.Interfaces
+namespace ProductCatalog.Application.Interfaces
 {
-    public interface IAuthRepository
+    public interface IAuthService
     {
         Task<string?> GetTokenAsync(string username, string password);
         Task<User?> GetCurrentUserAsync(string token);

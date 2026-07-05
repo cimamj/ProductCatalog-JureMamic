@@ -5,27 +5,22 @@ using ProductCatalog.Application.Features.Products.Requests;
 
 namespace ProductCatalog.Api.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ProductsController : ControllerBase
+public class ProductsController : ApiControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromServices] GetAllProductsHandler handler)
     {
         var result = await handler.HandleAsync(new GetAllProductsRequest());
-        return Ok(result.Value);
+        return ToActionResult(result);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id, [FromServices] GetProductByIdHandler handler)
     {
         var result = await handler.HandleAsync(new GetProductByIdRequest { Id = id });
-
-        if (!result.IsSuccess)
-            return NotFound(result.ErrorMessage);
-
-        return Ok(result.Value);
+        return ToActionResult(result);
     }
 
     [HttpGet("filter")]
@@ -43,17 +38,13 @@ public class ProductsController : ControllerBase
             MaxPrice = maxPrice
         });
 
-        return Ok(result.Value);
+        return ToActionResult(result);
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string searchTerm, [FromServices] SearchProductsHandler handler)
+    public async Task<IActionResult> Search([FromQuery] string? searchTerm, [FromServices] SearchProductsHandler handler)
     {
         var result = await handler.HandleAsync(new SearchProductsRequest { SearchTerm = searchTerm });
-
-        if (!result.IsSuccess)
-            return BadRequest(result.ErrorMessage);
-
-        return Ok(result.Value);
+        return ToActionResult(result);
     }
 }
